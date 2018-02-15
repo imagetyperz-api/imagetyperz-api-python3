@@ -12,12 +12,19 @@ def test_api():
     ita = ImageTyperzAPI(access_token)      # init imagetyperz api obj
 
     # legacy way, will get deprecated at some point
-    # ita.set_user_password('your_username', 'your_password')
+    ita.set_user_password('your_username', 'your_password')
 
     # check account balance
     # ---------------------------
     balance = ita.account_balance()                       # get account balance
     print ('Balance: {}'.format(balance))                 # print balance
+
+    # solve image captcha
+    # --------------------
+    # works with URL as well, if authenticated with token
+    print ('Solving captcha ...')
+    captcha_text = ita.solve_captcha('captcha.jpg')
+    print ('Captcha text: {}'.format(captcha_text))
 
     # solve recaptcha
     # check: http://www.imagetyperz.com/Forms/recaptchaapi.aspx on how to get page_url and googlekey
