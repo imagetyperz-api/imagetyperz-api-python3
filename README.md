@@ -106,6 +106,15 @@ Proxy with authentication is also supported
 captcha_id = ita.submit_recaptcha(page_url, sitekey, '12.34.56.78:1234:user:password')
 ```
 
+**Get details of proxy for recaptcha**
+
+In case you submitted the recaptcha with proxy, you can check the status of the proxy, if it was used or not,
+and if not, what the reason was with the following:
+
+``` python
+print (ita.was_proxy_used(captcha_id))
+```
+
 **Set captcha bad**
 
 When a captcha was solved wrong by our workers, you can notify the server with it's ID,

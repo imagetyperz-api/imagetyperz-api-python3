@@ -6,7 +6,7 @@ try:
 except:
     raise Exception('requests package not installed, try with: \'pip install requests\'')
 
-import os
+import os, json
 from base64 import b64encode
 
 # endpoints
@@ -16,6 +16,7 @@ RECAPTCHA_SUBMIT_ENDPOINT = 'http://captchatypers.com/captchaapi/UploadRecaptcha
 RECAPTCHA_RETRIEVE_ENDPOINT = 'http://captchatypers.com/captchaapi/GetRecaptchaText.ashx'
 BALANCE_ENDPOINT = 'http://captchatypers.com/Forms/RequestBalance.ashx'
 BAD_IMAGE_ENDPOINT = 'http://captchatypers.com/Forms/SetBadImage.ashx'
+PROXY_CHECK_ENDPOINT = 'http://captchatypers.com/captchaAPI/GetReCaptchaTextJSON.ashx'
 
 CAPTCHA_ENDPOINT_CONTENT_TOKEN = 'http://captchatypers.com/Forms/UploadFileAndGetTextNEWToken.ashx'
 CAPTCHA_ENDPOINT_URL_TOKEN = 'http://captchatypers.com/Forms/FileUploadAndGetTextCaptchaURLToken.ashx'
@@ -23,6 +24,7 @@ RECAPTCHA_SUBMIT_ENDPOINT_TOKEN = 'http://captchatypers.com/captchaapi/UploadRec
 RECAPTCHA_RETRIEVE_ENDPOINT_TOKEN = 'http://captchatypers.com/captchaapi/GetRecaptchaTextToken.ashx'
 BALANCE_ENDPOINT_TOKEN = 'http://captchatypers.com/Forms/RequestBalanceToken.ashx'
 BAD_IMAGE_ENDPOINT_TOKEN = 'http://captchatypers.com/Forms/SetBadImageToken.ashx'
+PROXY_CHECK_ENDPOINT_TOKEN = 'http://captchatypers.com/captchaAPI/GetReCaptchaTextTokenJSON.ashx'
 
 # user agent used in requests
 # ---------------------------
@@ -309,6 +311,52 @@ class ImageTyperzAPI:
             raise Exception(response_err)                               # raise
 
         return response_text  # we don't, return balance
+
+    # tells if proxy was used with captcha completion
+    def was_proxy_used(self, captcha_id):
+        # create params dict (multipart)
+        data = {
+            'action': 'GETTEXT',
+            'captchaid': captcha_id
+        }
+
+        if self._username:
+            data['username'] = self._username
+            data['password'] = self._password
+            url = PROXY_CHECK_ENDPOINT
+        else:
+            data['token'] = self._access_token
+            url = PROXY_CHECK_ENDPOINT_TOKEN
+        # make request with all data
+        response = self._session.post(url, data=data,
+                                      headers=self._headers, timeout=self._timeout)
+        response_text = response.text.encode('utf-8')  # get text from response
+
+        # check if we got an error
+        # -------------------------------------------------------------
+        js = json.loads(response_text)[0]
+        if 'Error' in js:
+            self._error = js['Error']
+            raise Exception(js['Error'])
+
+        # check if captcha is completed first
+        if js['Result'].strip() == '':
+            self._error = 'captcha not completed yet'
+            raise Exception('captcha not completed yet')
+
+        # check if client submitted proxy
+        if js['Proxy_client'].strip() == '':
+            return 'no, reason: proxy was no sent with recaptcha submission request'
+
+        # if we have a reason, it was submitted, but error
+        if js['Proxy_reason'].strip() != '':
+            return 'no, reason: {}'.format(js['Proxy_reason'])
+
+        # check if it was used
+        if len(js['Proxy_client'].split(':')) >= 2 and js['Proxy_client'] == js['Proxy_worker']:
+            return 'yes, used proxy: {}'.format(js['Proxy_worker'])
+
+        return 'no, reason: unknown'
 
     # get last captcha text
     @property
