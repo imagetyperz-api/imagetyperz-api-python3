@@ -158,11 +158,15 @@ class ImageTyperzAPI:
         return c.text
 
     # submit recaptcha to system
-    # SET PROXY AS WELL
-    # -------------------
-    # ----------------------------------
     # ------------------------------
-    def submit_recaptcha(self, page_url, sitekey, proxy = None):
+    def submit_recaptcha(self, d):
+        page_url = d['page_url']
+        sitekey = d['sitekey']
+
+        # check for proxy
+        proxy = None
+        if 'proxy' in d: proxy = d['proxy']       # if proxy, add it
+
         # check if page_url and sitekey are != None
         if not page_url: raise Exception('provide a valid page_url')
         if not sitekey: raise Exception('provide a valid sitekey')
@@ -179,7 +183,9 @@ class ImageTyperzAPI:
 
         # check proxy and set dict (request params) accordingly
         if proxy:   # if proxy is given, check proxytype
+            # we have both proxy and type at this point
             data['proxy'] = proxy
+            data['proxytype'] = 'HTTP'
 
         # init dict params  (request params)
         data['action'] = 'UPLOADCAPTCHA'
@@ -188,20 +194,28 @@ class ImageTyperzAPI:
         if self._affiliate_id:
             data['affiliateid'] = self._affiliate_id
 
+        # user agent
+        if 'user_agent' in d: data['useragent'] = d['user_agent']
+        
+        # v3
+        data['recaptchatype'] = 0
+        if 'type' in d: data['recaptchatype'] = d['type']
+        if 'v3_action' in d: data['captchaaction'] = d['v3_action']
+        if 'v3_min_score' in d: data['score'] = d['v3_min_score']
+
         # make request with all data
         response = self._session.post(url, data=data,
                                       headers=self._headers, timeout=self._timeout)
         response_text = str(response.text)  # get text from response
-
+        
         # check if we got an error
         # -------------------------------------------------------------
         if 'ERROR:' in response_text and response_text.split('|') != 2:
             response_err = response_text.split('ERROR:')[1].strip()
             self._error = response_err
             raise Exception(response_err)  # raise Ex
-
+        
         self._recaptcha = Recaptcha(response_text)      # init recaptcha obj with captcha_id (which is in the resp)
-
         return self._recaptcha.captcha_id           # return the ID
 
     # retrieve recaptcha

@@ -55,8 +55,23 @@ ita.solve_captcha('http://abc.com/your_captcha.jpg')
 For recaptcha submission there are two things that are required.
 - page_url
 - site_key
+- type - can be one of this 3 values: `1` - normal, `2` - invisible, `3` - v3 (it's optional, defaults to `1`)
+- v3_min_score - minimum score to target for v3 recaptcha `- optional`
+- v3_action - action parameter to use for v3 recaptcha `- optional`
+- proxy - proxy to use when solving recaptcha, eg. `12.34.56.78:1234` or `12.34.56.78:1234:user:password` `- optional`
+- user_agent - useragent to use when solve recaptcha `- optional` 
+
 ``` python
-captcha_id = ita.submit_recaptcha(page_url, sitekey)        # submit captcha first, to get ID
+recaptcha_params = {
+    'page_url' : 'example.com',
+    'sitekey' : '6FDDs34g3321-3234fgfh23rv32fgtrrsv3c',
+    'type' : 3,                     # optional, 1 - normal recaptcha, 2 - invisible recaptcha, 3 - v3 recaptcha, default: 1
+    'v3_min_score' : .3,           # optional
+    'v3_action' : 'homepage',      # optional
+    'proxy': '126.45.34.53:345',    # or 126.45.34.53:123:joe:password
+    'user_agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0'    # optional
+}
+captcha_id = ita.submit_recaptcha(recaptcha_params)
 ```
 This method returns a captchaID. This ID will be used next, to retrieve the g-response, once workers have 
 completed the captcha. This takes somewhere between 10-80 seconds.
@@ -91,19 +106,6 @@ ita = ImageTyperzAPI(access_token, 123)     # 123 is the affid
 As a 3rd parameter in the constructor, you can specify a timeout for the requests (in seconds)
 ``` python
 ita = ImageTyperzAPI(access_token, 123, 60)  # sets timeout to 60 seconds
-```
-
-**Submit recaptcha with proxy**
-
-When a proxy is submitted with the recaptcha details, the workers will complete the captcha using
-the provided proxy/IP.
-
-``` python
-captcha_id = ita.submit_recaptcha(page_url, sitekey, '12.34.56.78:1234')    # ip:port
-```
-Proxy with authentication is also supported
-``` python
-captcha_id = ita.submit_recaptcha(page_url, sitekey, '12.34.56.78:1234:user:password')
 ```
 
 **Get details of proxy for recaptcha**
