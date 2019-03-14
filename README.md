@@ -50,7 +50,10 @@ ita.solve_captcha('captcha.jpg', case_sensitive=False)
 ``` python
 ita.solve_captcha('http://abc.com/your_captcha.jpg')   
 ```
-**Submit recaptcha details**
+
+## reCAPTCHA
+
+### Submit recaptcha details
 
 For recaptcha submission there are two things that are required.
 - page_url
@@ -76,7 +79,7 @@ captcha_id = ita.submit_recaptcha(recaptcha_params)
 This method returns a captchaID. This ID will be used next, to retrieve the g-response, once workers have 
 completed the captcha. This takes somewhere between 10-80 seconds.
 
-**Retrieve captcha response**
+### Retrieve captcha response
 
 Once you have the captchaID, you check for it's progress, and later on retrieve the gresponse.
 
@@ -91,6 +94,49 @@ while ita.in_progress():    # while it's still in progress
 recaptcha_response = ita.retrieve_recaptcha(captcha_id)           # captcha_id is optional, if not given, will use last captcha id submited
 print ('Recaptcha response: {}'.format(recaptcha_response))         # print google response
 ```
+
+
+## GeeTest
+
+GeeTest is a captcha that requires 3 parameters to be solved:
+- domain
+- challenge
+- gt
+
+The response of this captcha after completion are 3 codes:
+- challenge
+- validate
+- seccode
+
+### Submit GeeTest
+```python
+geetest_params = {
+        'domain' :'domain_here',
+        'challenge': 'challenge_here',
+        'gt': 'gt_here',
+        'proxy': '126.45.34.53:345',    # or 126.45.34.53:123:joe:password, optional
+        'user_agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0'    # optional
+}
+captcha_id = ita.submit_geetest(geetest_params)
+```
+
+Just like reCAPTCHA, you'll receive a captchaID.
+Using the ID, you'll be able to retrieve 3 codes after completion.
+
+Optionally, you can send proxy and user_agent along.
+
+### Retrieve GeeTest codes
+```python
+print ('Geetest captcha ID: {}'.format(captcha_id))
+print ('Waiting for geetest to be solved...')
+while ita.in_progress():
+    sleep(10)
+geetest_response = ita.retrieve_geetest(captcha_id)
+print (geetest_response)
+```
+
+Response will look like this: `{'challenge': '...', 'validate': '...', 'seccode': '...'}`
+
 
 ## Other methods/variables
 

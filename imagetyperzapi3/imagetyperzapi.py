@@ -8,6 +8,7 @@ except:
 
 import os, json
 from base64 import b64encode
+from urllib.parse import urlencode
 
 # endpoints
 # -------------------------------------------------------------------------------------------
@@ -17,6 +18,8 @@ RECAPTCHA_RETRIEVE_ENDPOINT = 'http://captchatypers.com/captchaapi/GetRecaptchaT
 BALANCE_ENDPOINT = 'http://captchatypers.com/Forms/RequestBalance.ashx'
 BAD_IMAGE_ENDPOINT = 'http://captchatypers.com/Forms/SetBadImage.ashx'
 PROXY_CHECK_ENDPOINT = 'http://captchatypers.com/captchaAPI/GetReCaptchaTextJSON.ashx'
+GEETEST_SUBMIT_ENDPOINT = 'http://captchatypers.com/captchaapi/UploadGeeTest.ashx'
+GEETEST_RETRIEVE_ENDPOINT = 'http://captchatypers.com/captchaapi/getrecaptchatext.ashx'
 
 CAPTCHA_ENDPOINT_CONTENT_TOKEN = 'http://captchatypers.com/Forms/UploadFileAndGetTextNEWToken.ashx'
 CAPTCHA_ENDPOINT_URL_TOKEN = 'http://captchatypers.com/Forms/FileUploadAndGetTextCaptchaURLToken.ashx'
@@ -25,6 +28,7 @@ RECAPTCHA_RETRIEVE_ENDPOINT_TOKEN = 'http://captchatypers.com/captchaapi/GetReca
 BALANCE_ENDPOINT_TOKEN = 'http://captchatypers.com/Forms/RequestBalanceToken.ashx'
 BAD_IMAGE_ENDPOINT_TOKEN = 'http://captchatypers.com/Forms/SetBadImageToken.ashx'
 PROXY_CHECK_ENDPOINT_TOKEN = 'http://captchatypers.com/captchaAPI/GetReCaptchaTextTokenJSON.ashx'
+GEETEST_SUBMIT_ENDPOINT_TOKEN = 'http://captchatypers.com/captchaapi/UploadGeeTestToken.ashx'
 
 # user agent used in requests
 # ---------------------------
@@ -77,6 +81,31 @@ class Recaptcha:
     def response(self):
         return self._response
 
+# Geetest class
+# ---------------------------------
+class Geetest:
+    def __init__(self, captcha_id):
+        self._captcha_id = captcha_id
+        self._response = ''
+
+    # set response
+    def set_response(self, response):
+        self._response = response
+
+    @property
+    def captcha_id(self):
+        return self._captcha_id
+
+    @property
+    def response(self):
+        s = self._response.split(';;;')
+        if len(s) == 3:
+            return {
+                'challenge': s[0],
+                'validate': s[1],
+                'seccode': s[2]
+            }
+        else: return self._response
 
 # API class
 # -----------------------------------------
@@ -258,16 +287,97 @@ class ImageTyperzAPI:
 
         return response_text            # return response
 
+    # submit geetest captcha
+    def submit_geetest(self, d):
+        # check if page_url and sitekey are != None
+        if 'domain' not in d: raise Exception('domain is missing')
+        if 'challenge' not in d: raise Exception('challenge is missing')
+        if 'gt' not in d: raise Exception('gt is missing')
+        d['action'] = 'UPLOADCAPTCHA'
+        # credentials and url
+        if self._username:
+            d['username'] = self._username
+            d['password'] = self._password
+            url = GEETEST_SUBMIT_ENDPOINT
+        else:
+            d['token'] = self._access_token
+            url = GEETEST_SUBMIT_ENDPOINT_TOKEN
+
+        # affiliate ID
+        if self._affiliate_id: d['affiliateid'] = self._affiliate_id
+
+        url = '{}?{}'.format(url, urlencode(d))
+        # make request with all data
+        response = self._session.post(url, data=d,
+                                      headers=self._headers, timeout=self._timeout)
+        response_text = '{}'.format(response.text)
+
+        # check if we got an error
+        # -------------------------------------------------------------
+        if 'ERROR:' in response_text and response_text.split('|') != 2:
+            response_err = response_text.split('ERROR:')[1].strip()
+            self._error = response_err
+            raise Exception(response_err)  # raise Ex
+
+        self._geetest = Geetest(response_text)  # init recaptcha obj with captcha_id (which is in the resp)
+        return self._geetest.captcha_id  # return the ID
+
+    # retrieve geetest captcha
+    def retrieve_geetest(self, captcha_id=None):
+        # if captcha id is not specified, use the ID of the last captcha submited
+        if not captcha_id:
+            if not self._geetest: raise Exception('no geetest was submited previously, submit a captcha'
+                                                  ' first or give captcha_id as argument')  # raise it
+            captcha_id = self._geetest.captcha_id
+        # create params dict (multipart)
+        data = {
+            'action': 'GETTEXT',
+            'captchaid': captcha_id
+        }
+        # set URL
+        if self._username:
+            data['username'] = self._username
+            data['password'] = self._password
+            url = GEETEST_RETRIEVE_ENDPOINT
+        else:
+            data['token'] = self._access_token
+            url = GEETEST_RETRIEVE_ENDPOINT
+
+        url = '{}?{}'.format(url, urlencode(data))
+        # make request with all data
+        response = self._session.get(url,
+                                     headers=self._headers, timeout=self._timeout)
+        response_text = response.text  # get text from response
+
+        # check if we got an error
+        # -------------------------------------------------------------
+        if 'ERROR:' in response_text and response_text.split('|') != 2:
+            response_err = response_text.split('ERROR:')[1].strip()
+            # if error is different than NOT_DECODED, save it to obj
+            if response_err != 'NOT_DECODED': self._error = response_err
+
+            raise Exception(response_err)  # raise Ex
+
+        self._geetest.set_response(response_text)  # set response to recaptcha obj
+
+        return self._geetest.response  # return response
+
     # check if captcha is still being decoded
-    def in_progress(self, captcha_id = None):
+    def in_progress(self, captcha_id=None):
         try:
-            self.retrieve_recaptcha(captcha_id)     # retrieve captcha
-            return False                             # captcha got decoded
+            if self._geetest:
+                # geetest
+                self.retrieve_geetest(captcha_id)
+                return False
+            else:
+                # recaptcha
+                self.retrieve_recaptcha(captcha_id)  # retrieve captcha
+                return False  # captcha got decoded
         except Exception as ex:
-            if 'NOT_DECODED' in str(ex):        # if NOT_DECODED in response, it's 'OK'
+            if 'NOT_DECODED' in str(ex):  # if NOT_DECODED in response, it's 'OK'
                 return True
 
-            raise       # raise Exception if different error
+            raise  # raise Exception if different error
 
     # get account balance
     def account_balance(self):

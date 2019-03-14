@@ -48,6 +48,23 @@ def test_api():
     recaptcha_response = ita.retrieve_recaptcha(captcha_id)           # captcha_id is optional, if not given, will use last captcha id submited
     print ('Recaptcha response: {}'.format(recaptcha_response))         # print google response
 
+    # GeeTest captcha
+    # ----------------
+    # geetest_params = {
+    #     'domain' :'domain_here',
+    #     'challenge': 'challenge_here',
+    #     'gt': 'gt_here',
+    #     'proxy': '126.45.34.53:345',    # or 126.45.34.53:123:joe:password
+    #     'user_agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0'    # optional
+    # }
+    # captcha_id = ita.submit_geetest(geetest_params)
+    # print ('Geetest captcha ID: {}'.format(captcha_id))
+    # print ('Waiting for geetest to be solved...')
+    # while ita.in_progress():
+    #     sleep(10)
+    # geetest_response = ita.retrieve_geetest(captcha_id)
+    # print (geetest_response)      # {'challenge': '...', 'validate': '...', 'seccode': '...'}
+
     # other examples
     # --------------------------------------------------------------------------------------
     # ita = ImageTypersAPI(access_token, 123)  # init imagetyperz api obj with access_token and affiliate id
