@@ -117,6 +117,7 @@ class ImageTyperzAPI:
         # empty by default
         self._username = ''
         self._password = ''
+        self._geetest = None
 
         self._timeout = timeout
         self._session = session()       # init a new session
