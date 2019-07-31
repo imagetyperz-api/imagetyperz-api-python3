@@ -24,13 +24,15 @@ def test_api():
     # works with URL as well, if authenticated with token
     print ('Solving captcha ...')
     captcha_text = ita.solve_captcha('captcha.jpg')
+    # optional parameters for image captcha
+    # captcha_text = ita.solve_captcha('captcha.jpg', is_case_sensitive = False, is_phrase = False, digits_only = False, letters_only = True, is_math = False, min_length = 2, max_length = 10)
     print ('Captcha text: {}'.format(captcha_text))
 
     # solve recaptcha
     # check https://github.com/imagetyperz-api/API-docs#submit-recaptcha for more details
     # -----------------------------------------------------------------------------------------------
     recaptcha_params = {
-        'page_url' : 'page_url_here',
+        'page_url' : 'page_url_here',			# add --capy at the end of page url, to transform it into a capy captcha
         'sitekey' : 'sitekey_here',
         'type' : 1,                     # optional, 1 - normal recaptcha, 2 - invisible recaptcha, 3 - v3 recaptcha, default: 1
         #'v3_min_score' : .3,           # optional

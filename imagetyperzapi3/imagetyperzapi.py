@@ -137,7 +137,7 @@ class ImageTyperzAPI:
         self._password = password
 
     # solve normal captcha
-    def solve_captcha(self, image_path, case_sensitive = False):
+    def solve_captcha(self, image_path, is_case_sensitive = False, is_math = False, is_phrase = False, digits_only = False, letters_only = False, min_length = 0, max_length = 0):
         data = {}
         # if username is given, do it with user otherwise token
         if self._username:
@@ -165,10 +165,21 @@ class ImageTyperzAPI:
 
         # init dict params  (request params)
         data['action'] = 'UPLOADCAPTCHA'
-        data['chkCase'] = '1' if case_sensitive else '0'
+        data['iscase'] = 'true' if is_case_sensitive else None
+        data['isphrase'] = 'true' if is_phrase else None
+        data['ismath'] = 'true' if is_math else None
+
+        # digits, letters, or both
+        if digits_only: data['alphanumeric'] = '1'
+        elif letters_only: data['alphanumeric'] = '2'
+
+        # min, max length
+        if min_length != 0: data['minlength'] = min_length
+        if max_length != 0: data['maxlength'] = max_length
+
         data['file'] = image_data
-        if self._affiliate_id:
-            data['affiliateid'] = self._affiliate_id
+
+        if self._affiliate_id: data['affiliateid'] = self._affiliate_id
 
         # make request with all data
         response = self._session.post(url, data=data,
