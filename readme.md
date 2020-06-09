@@ -68,6 +68,7 @@ For recaptcha submission there are two things that are required.
 - v3_action - action parameter to use for v3 recaptcha `- optional`
 - proxy - proxy to use when solving recaptcha, eg. `12.34.56.78:1234` or `12.34.56.78:1234:user:password` `- optional`
 - user_agent - useragent to use when solve recaptcha `- optional` 
+- data-s - extra parameter used in solving recaptcha `- optional`
 
 ``` python
 recaptcha_params = {
@@ -77,7 +78,8 @@ recaptcha_params = {
     'v3_min_score' : .3,           # optional
     'v3_action' : 'homepage',      # optional
     'proxy': '126.45.34.53:345',    # or 126.45.34.53:123:joe:password
-    'user_agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0'    # optional
+    'user_agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0',    # optional
+    'data-s': 'data-s-value-here'   # optional
 }
 captcha_id = ita.submit_recaptcha(recaptcha_params)
 ```

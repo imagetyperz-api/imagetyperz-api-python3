@@ -243,7 +243,7 @@ class ImageTyperzAPI:
         if 'type' in d: data['recaptchatype'] = d['type']
         if 'v3_action' in d: data['captchaaction'] = d['v3_action']
         if 'v3_min_score' in d: data['score'] = d['v3_min_score']
-
+        if 'data-s' in d: data['data-s'] = d['data-s']
         # make request with all data
         response = self._session.post(url, data=data,
                                       headers=self._headers, timeout=self._timeout)
