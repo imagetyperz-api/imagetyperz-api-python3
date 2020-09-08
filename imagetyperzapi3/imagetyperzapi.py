@@ -9,6 +9,7 @@ except:
 import os, json
 from base64 import b64encode
 from urllib.parse import urlencode
+from json import loads as json_loads
 
 # endpoints
 # -------------------------------------------------------------------------------------------
@@ -20,6 +21,7 @@ BAD_IMAGE_ENDPOINT = 'http://captchatypers.com/Forms/SetBadImage.ashx'
 PROXY_CHECK_ENDPOINT = 'http://captchatypers.com/captchaAPI/GetReCaptchaTextJSON.ashx'
 GEETEST_SUBMIT_ENDPOINT = 'http://captchatypers.com/captchaapi/UploadGeeTest.ashx'
 GEETEST_RETRIEVE_ENDPOINT = 'http://captchatypers.com/captchaapi/getrecaptchatext.ashx'
+HCAPTCHA_ENDPOINT = 'http://captchatypers.com/captchaapi/UploadHCaptchaUser.ashx'
 
 CAPTCHA_ENDPOINT_CONTENT_TOKEN = 'http://captchatypers.com/Forms/UploadFileAndGetTextNEWToken.ashx'
 CAPTCHA_ENDPOINT_URL_TOKEN = 'http://captchatypers.com/Forms/FileUploadAndGetTextCaptchaURLToken.ashx'
@@ -124,6 +126,7 @@ class ImageTyperzAPI:
 
         self._normal_captcha = None            # save last solved captcha
         self._recaptcha = None
+        self._hcaptcha = None
 
         self._error = None              # keep track of last error
 
@@ -374,12 +377,113 @@ class ImageTyperzAPI:
 
         return self._geetest.response  # return response
 
+    # submit hcaptcha
+    def submit_hcaptcha(self, d):
+        page_url = d['page_url']
+        sitekey = d['sitekey']
+
+        # check for proxy
+        proxy = None
+        if 'proxy' in d: proxy = d['proxy']  # if proxy, add it
+
+        # check if page_url and sitekey are != None
+        if not page_url: raise Exception('provide a valid page_url')
+        if not sitekey: raise Exception('provide a valid sitekey')
+
+        data = {}  # create data obj here, we might need it for proxy
+
+        if self._username:
+            data['username'] = self._username
+            data['password'] = self._password
+            url = HCAPTCHA_ENDPOINT
+        else:
+            data['token'] = self._access_token
+            url = HCAPTCHA_ENDPOINT
+
+        # check proxy and set dict (request params) accordingly
+        if proxy:  # if proxy is given, check proxytype
+            # we have both proxy and type at this point
+            data['proxy'] = proxy
+            data['proxytype'] = 'HTTP'
+
+        # init dict params  (request params)
+        data['action'] = 'UPLOADCAPTCHA'
+        data['pageurl'] = page_url
+        data['googlekey'] = sitekey
+        data['captchatype'] = 11
+        if self._affiliate_id:
+            data['affiliateid'] = self._affiliate_id
+
+        # user agent
+        if 'user_agent' in d: data['useragent'] = d['user_agent']
+
+        # make request with all data
+        response = self._session.post(url, data=data,
+                                      headers=self._headers, timeout=self._timeout)
+        response_text = str(response.text)  # get text from response
+
+        # check if we got an error
+        # -------------------------------------------------------------
+        if 'ERROR:' in response_text and response_text.split('|') != 2:
+            response_err = response_text.split('ERROR:')[1].strip()
+            self._error = response_err
+            raise Exception(response_err)  # raise Ex
+        else:
+            js = json_loads(response.text)
+            response_text = js[0]['CaptchaId']
+
+            self._hcaptcha = Recaptcha(response_text)  # init recaptcha obj with captcha_id (which is in the resp)
+            return self._hcaptcha.captcha_id  # return the ID
+
+    # retrieve geetest captcha
+    def retrieve_hcaptcha(self, captcha_id=None):
+        # if captcha id is not specified, use the ID of the last captcha submited
+        if not captcha_id:
+            if not self._hcaptcha: raise Exception('no hcaptcha was submited previously, submit a captcha'
+                                                    ' first or give captcha_id as argument')  # raise it
+            captcha_id = self._hcaptcha.captcha_id
+
+        # create params dict (multipart)
+        data = {
+            'action': 'GETTEXT',
+            'captchaid': captcha_id
+        }
+
+        if self._username:
+            data['username'] = self._username
+            data['password'] = self._password
+            url = RECAPTCHA_RETRIEVE_ENDPOINT
+        else:
+            data['token'] = self._access_token
+            url = RECAPTCHA_RETRIEVE_ENDPOINT_TOKEN
+
+        # make request with all data
+        response = self._session.post(url, data=data,
+                                      headers=self._headers, timeout=self._timeout)
+        response_text = str(response.text)  # get text from response
+
+        # check if we got an error
+        # -------------------------------------------------------------
+        if 'ERROR:' in response_text and response_text.split('|') != 2:
+            response_err = response_text.split('ERROR:')[1].strip()
+            # if error is different than NOT_DECODED, save it to obj
+            if response_err != 'NOT_DECODED': self._error = response_err
+
+            raise Exception(response_err)  # raise Ex
+
+        self._hcaptcha.set_response(response_text)  # set response to recaptcha obj
+
+        return response_text  # return response
+
     # check if captcha is still being decoded
     def in_progress(self, captcha_id=None):
         try:
             if self._geetest:
                 # geetest
                 self.retrieve_geetest(captcha_id)
+                return False
+            elif self._hcaptcha:
+                self.retrieve_hcaptcha(captcha_id)
                 return False
             else:
                 # recaptcha
