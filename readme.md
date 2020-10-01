@@ -4,35 +4,24 @@ imagetyperz-api-python3 - Imagetyperz API wrapper
 imagetyperzapi3 is a super easy to use bypass captcha API wrapper for imagetyperz.com captcha service
 
 ## Installation
-    pip install imagetyperzapi3
-
-or
-    
     git clone https://github.com/imagetyperz-api/imagetyperz-api-python3
 
 ## Usage
-    # make sure you've changed access_key, page_url, etc in main.py
-    python3 main.py  
-
-## How to use?
 
 Simply require the module, set the auth details and start using the captcha service:
 
 ``` python
 from imagetyperzapi3.imagetyperzapi import ImageTyperzAPI
 ```
-Set access_token or username and password (legacy) for authentication
+Set access_token for authentication:
 
 ``` python
 access_token = 'access_token_here'
 # get access token from: http://www.imagetyperz.com/Forms/ClientHome.aspx
 ita = ImageTyperzAPI(access_token)      # init imagetyperz api obj
 ```
-```python
-# legacy way, will get deprecated at some point
-#ita.set_user_password('your_username', 'your_password')
-```
-Once you've set your authentication details, you can start using the API
+
+Once you've set your authentication details, you can start using the API.
 
 **Get balance**
 
@@ -41,28 +30,35 @@ balance = ita.account_balance()                       # get account balance
 print ('Balance: {}'.format(balance))                 # print balance
 ```
 
-**Submit image captcha**
+## Solving
+For solving a captcha, it's a two step process:
+- **submit captcha** details - returns an ID
+- use ID to check it's progress - and **get solution** when solved.
+
+Each captcha type has it's own submission method.
+
+For getting the response, same method is used for all types.
+
+
+### Image captcha
 
 ``` python
-ita.solve_captcha('captcha.jpg', case_sensitive=False)
+captcha_id = ita.submit_image('captcha.jpg')
 ```
 (with optional parameters)
 ```python
-ita.solve_captcha('captcha.jpg', is_case_sensitive = False, is_phrase = False, digits_only = False, letters_only = True, is_math = False, min_length = 2, max_length = 10)
+captcha_id = ita.solve_captcha('captcha.jpg', is_case_sensitive = False, is_phrase = False, digits_only = False, letters_only = True, is_math = False, min_length = 2, max_length = 10)
 ```
+ID is used to retrieve solution when solved.
 
-**Works with both files and URLs**
-``` python
-ita.solve_captcha('http://abc.com/your_captcha.jpg')   
-```
+**Observation**
+It works with URL instead of image file too, but authentication has to be done using token.
 
-## reCAPTCHA
-
-### Submit recaptcha details
+### reCAPTCHA
 
 For recaptcha submission there are two things that are required.
-- page_url
-- site_key
+- page_url (**required**)
+- site_key (**required**)
 - type - can be one of this 3 values: `1` - normal, `2` - invisible, `3` - v3 (it's optional, defaults to `1`)
 - v3_min_score - minimum score to target for v3 recaptcha `- optional`
 - v3_action - action parameter to use for v3 recaptcha `- optional`
@@ -71,39 +67,24 @@ For recaptcha submission there are two things that are required.
 - data-s - extra parameter used in solving recaptcha `- optional`
 
 ``` python
-recaptcha_params = {
+captcha_params = {
     'page_url' : 'example.com',
     'sitekey' : '6FDDs34g3321-3234fgfh23rv32fgtrrsv3c',
-    'type' : 3,                     # optional, 1 - normal recaptcha, 2 - invisible recaptcha, 3 - v3 recaptcha, default: 1
-    'v3_min_score' : .3,           # optional
-    'v3_action' : 'homepage',      # optional
-    'proxy': '126.45.34.53:345',    # or 126.45.34.53:123:joe:password
-    'user_agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0',    # optional
-    'data-s': 'data-s-value-here'   # optional
+    #'type' : 2,                     # optional, 1 - normal recaptcha, 2 - invisible recaptcha, 3 - v3 recaptcha, default: 1
+    #'v3_min_score' : .3,           # optional
+    #'v3_action' : 'homepage',      # optional
+    #'proxy': '126.45.34.53:345',    # optional, or 126.45.34.53:123:joe:password
+    #'user_agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0',    # optional
+    #'data-s': 'data-s-value-here'   # optional
 }
-captcha_id = ita.submit_recaptcha(recaptcha_params)
+captcha_id = ita.submit_recaptcha(captcha_params)
 ```
-This method returns a captchaID. This ID will be used next, to retrieve the g-response, once workers have 
-completed the captcha. This takes somewhere between 10-80 seconds.
+ID will be used to retrieve the g-response, once workers have 
+completed the captcha. This takes somewhere between 10-80 seconds. 
 
-### Retrieve captcha response
+Check **Retrieve response** 
 
-Once you have the captchaID, you check for it's progress, and later on retrieve the gresponse.
-
-The ***in_progress()*** method will tell you if captcha is still being decoded by workers.
-Once it's no longer in progress, you can retrieve the gresponse with ***retrieve_recaptcha(captcha_id)***  
-
-``` python
-# check if it's still in progress (waiting to be solved), every 10 seconds
-while ita.in_progress():    # while it's still in progress
-	sleep(10)               # sleep for 10 seconds and recheck
-
-recaptcha_response = ita.retrieve_recaptcha(captcha_id)           # captcha_id is optional, if not given, will use last captcha id submited
-print ('Recaptcha response: {}'.format(recaptcha_response))         # print google response
-```
-
-
-## GeeTest
+### GeeTest
 
 GeeTest is a captcha that requires 3 parameters to be solved:
 - domain
@@ -115,62 +96,98 @@ The response of this captcha after completion are 3 codes:
 - validate
 - seccode
 
-### Submit GeeTest
-```python
-geetest_params = {
-        'domain' :'domain_here',
-        'challenge': 'challenge_here',
-        'gt': 'gt_here',
-        'proxy': '126.45.34.53:345',    # or 126.45.34.53:123:joe:password, optional
-        'user_agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0'    # optional
-}
-captcha_id = ita.submit_geetest(geetest_params)
-```
+**Important**
+This captcha requires a **unique** challenge to be sent along with each captcha.
 
-Just like reCAPTCHA, you'll receive a captchaID.
-Using the ID, you'll be able to retrieve 3 codes after completion.
+```python
+captcha_params = {
+        'domain' :'https://your-site.com',
+        'challenge': 'eea8d7d1bd1a933d72a9eda8af6d15d3',
+        'gt': '1a761081b1114c388092c8e2fd7f58bc',
+        # 'proxy': '126.45.34.53:345',    # or 126.45.34.53:123:joe:password
+        # 'user_agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0'    # optional
+}
+captcha_id = ita.submit_geetest(captcha_params)
+```
 
 Optionally, you can send proxy and user_agent along.
 
-### Retrieve GeeTest codes
+### hCaptcha
+
+Requires page_url and sitekey
+
 ```python
-print ('Geetest captcha ID: {}'.format(captcha_id))
-print ('Waiting for geetest to be solved...')
-while ita.in_progress():
-    sleep(10)
-geetest_response = ita.retrieve_geetest(captcha_id)
-print (geetest_response)
+captcha_params = {
+        'page_url': 'https://your-site.com',
+        'sitekey': '8c7062c7-cae6-4e12-96fb-303fbec7fe4f',
+        # 'proxy': '126.45.34.53:345',   # or 126.45.34.53:123:joe:password
+        # 'user_agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0',    # optional
+    }
+    captcha_id = ita.submit_hcaptcha(captcha_params)
 ```
 
-Response will look like this: `{'challenge': '...', 'validate': '...', 'seccode': '...'}`
+### Capy
 
-## Capy & hCaptcha
+Requires page_url and sitekey
 
-This are two different captcha types, but both are similar to reCAPTCHA. They require a `pageurl` and `sitekey` for solving. hCaptcha is the newest one.
-
-### IMPORTANT
-For this two captcha types, the reCAPTCHA methods are used (explained above), except that there's one small difference.
-
-The `pageurl` parameter should have at the end of it `--capy` added for Capy captcha and `--hcaptcha` for the hCaptcha. This instructs our system it's a capy or hCaptcha. It will be changed in the future, to have it's own endpoints.
-
-For example, if you were to have the `pageurl` = `https://mysite.com` you would send it as `https://mysite.com--capy` if it's capy or `https://mysite.com--hcaptcha` for hCaptcha. Both require a sitekey too, which is sent as reCAPTCHA sitekey, and response is received as reCAPTCHA response, once again using the reCAPTCHA method.
-
-#### Example
 ```python
-# submit
-p = {
-        'page_url' :'domain.com--capy',		# or `domain.com--hcaptcha`
-        'sitekey': 'sitekey_goes_here',
+captcha_params = {
+    'page_url': 'https://your-site.com',
+    'sitekey': 'Fme6hZLjuCRMMC3uh15F52D3uNms5c',
+     # 'proxy': '126.45.34.53:345',   # or 126.45.34.53:123:joe:password
+     # 'user_agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0',    # optional
 }
-captcha_id = ita.submit_recaptcha(p)
+captcha_id = ita.submit_capy(captcha_params)  # submit captcha first, to get ID
+```
 
-# retrieve
-print ('Capy captcha ID: {}'.format(captcha_id))
-print ('Waiting for capy to be solved...')
-while ita.in_progress():
-    sleep(10)
-solution = ita.retrieve_recaptcha(captcha_id)
-print (solution)
+### Tiktok
+
+Requires page_url cookie_input
+
+```python
+captcha_params = {
+    'page_url': 'https://tiktok.com',
+     # make sure `s_v_web_id` cookie is present
+     'cookie_input': 's_v_web_id:verify_kd6243o_fd449FX_FDGG_1x8E_8NiQ_fgrg9FEIJ3f;tt_webid:612465623570154;tt_webid_v2:7679206562717014313;SLARDAR_WEB_ID:d0314f-ce16-5e16-a066-71f19df1545f;',
+     # 'proxy': '126.45.34.53:345',   # or 126.45.34.53:123:joe:password
+     # 'user_agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0',    # optional
+}
+captcha_id = ita.submit_tiktok(captcha_params)  # submit captcha first, to get ID
+```
+
+## Retrieve response
+
+Regardless of the captcha type (and method) used in submission of the captcha, this method is used
+right after to check for it's solving status and also get the response once solved.
+
+It requires one parameter, that's the **captcha ID** gathered from first step.
+
+```python
+response = ita.retrieve_response(captcha_id)
+```
+
+```python
+# get a captcha_id first
+captcha_id = ita.submit_recaptcha(captcha_params)  # submit captcha first, to get ID
+
+# check if it's still in progress (waiting to be solved), every 10 seconds
+print('Waiting for captcha to be solved ...')
+response = None
+while not response:  # while it's still in progress
+    sleep(10)  # sleep for 10 seconds and recheck
+    response = ita.retrieve_response(captcha_id)
+print('Response: {}'.format(response))  # print response of captcha
+```
+The response is a JSON object that looks like this:
+```json
+{
+  "CaptchaId": 176707908, 
+  "Response": "03AGdBq24PBCbwiDRaS_MJ7Z...mYXMPiDwWUyEOsYpo97CZ3tVmWzrB", 
+  "Cookie_OutPut": "", 
+  "Proxy_reason": "", 
+  "Recaptcha score": 0.0, 
+  "Status": "Solved"
+}
 ```
 
 ## Other methods/variables
@@ -189,15 +206,6 @@ As a 3rd parameter in the constructor, you can specify a timeout for the request
 ita = ImageTyperzAPI(access_token, 123, 60)  # sets timeout to 60 seconds
 ```
 
-**Get details of proxy for recaptcha**
-
-In case you submitted the recaptcha with proxy, you can check the status of the proxy, if it was used or not,
-and if not, what the reason was with the following:
-
-``` python
-print (ita.was_proxy_used(captcha_id))
-```
-
 **Set captcha bad**
 
 When a captcha was solved wrong by our workers, you can notify the server with it's ID,
@@ -208,7 +216,7 @@ ita.set_captcha_bad(captcha_id)
 ```
 
 ## Examples
-Check main.py
+Check root folder for examples, for each type of captcha.
 
 ## License
 API library is licensed under the MIT License
