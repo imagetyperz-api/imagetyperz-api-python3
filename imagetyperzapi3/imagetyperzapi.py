@@ -15,6 +15,7 @@ from json import loads as json_loads
 # -------------------------------------------------------------------------------------------
 CAPTCHA_ENDPOINT = 'http://captchatypers.com/Forms/UploadFileAndGetTextNEW.ashx'
 RECAPTCHA_SUBMIT_ENDPOINT = 'http://captchatypers.com/captchaapi/UploadRecaptchaV1.ashx'
+RECAPTCHA_ENTERPRISE_SUBMIT_ENDPOINT = 'http://captchatypers.com/captchaapi/UploadRecaptchaEnt.ashx'
 RECAPTCHA_RETRIEVE_ENDPOINT = 'http://captchatypers.com/captchaapi/GetRecaptchaText.ashx'
 BALANCE_ENDPOINT = 'http://captchatypers.com/Forms/RequestBalance.ashx'
 BAD_IMAGE_ENDPOINT = 'http://captchatypers.com/Forms/SetBadImage.ashx'
@@ -155,12 +156,18 @@ class ImageTyperzAPI:
         # user agent
         if 'user_agent' in d: data['useragent'] = d['user_agent']
         
-        # v3
         data['recaptchatype'] = 0
-        if 'type' in d: data['recaptchatype'] = d['type']
+        if 'type' in d:
+            data['recaptchatype'] = d['type']
+            # enterprise
+            if str(d['type']) == '4' or str(d['type']) == '5':
+                url = RECAPTCHA_ENTERPRISE_SUBMIT_ENDPOINT
+            if str(d['type']) == '5':
+                data['enterprise_type'] = 'v3'
         if 'v3_action' in d: data['captchaaction'] = d['v3_action']
         if 'v3_min_score' in d: data['score'] = d['v3_min_score']
         if 'data-s' in d: data['data-s'] = d['data-s']
+        if 'cookie_input' in d: data['cookie_input'] = d['cookie_input']
         # make request with all data
         response = self._session.post(url, data=data,
                                       headers=self._headers, timeout=self._timeout)

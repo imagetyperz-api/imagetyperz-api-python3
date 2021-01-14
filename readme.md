@@ -59,23 +59,30 @@ It works with URL instead of image file too, but authentication has to be done u
 For recaptcha submission there are two things that are required.
 - page_url (**required**)
 - site_key (**required**)
-- type - can be one of this 3 values: `1` - normal, `2` - invisible, `3` - v3 (it's optional, defaults to `1`)
+- type (optional, defaults to 1 if not given)
+  - `1` - v2
+  - `2` - invisible
+  - `3` - v3
+  - `4` - enterprise v2
+  - `5` - enterprise v3
 - v3_min_score - minimum score to target for v3 recaptcha `- optional`
 - v3_action - action parameter to use for v3 recaptcha `- optional`
 - proxy - proxy to use when solving recaptcha, eg. `12.34.56.78:1234` or `12.34.56.78:1234:user:password` `- optional`
 - user_agent - useragent to use when solve recaptcha `- optional` 
 - data-s - extra parameter used in solving recaptcha `- optional`
+- cookie_input - cookies used in solving reCAPTCHA - `- optional`
 
 ``` python
 captcha_params = {
     'page_url' : 'example.com',
     'sitekey' : '6FDDs34g3321-3234fgfh23rv32fgtrrsv3c',
-    #'type' : 2,                     # optional, 1 - normal recaptcha, 2 - invisible recaptcha, 3 - v3 recaptcha, default: 1
+    #'type' : 2,                    # optional
     #'v3_min_score' : .3,           # optional
     #'v3_action' : 'homepage',      # optional
     #'proxy': '126.45.34.53:345',    # optional, or 126.45.34.53:123:joe:password
     #'user_agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0',    # optional
     #'data-s': 'data-s-value-here'   # optional
+    #'cookie_input': 'a=b;c=d'  # optional
 }
 captcha_id = ita.submit_recaptcha(captcha_params)
 ```

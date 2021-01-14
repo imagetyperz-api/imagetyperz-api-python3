@@ -13,14 +13,26 @@ def test_api():
     print('Balance: {}'.format(balance))  # print balance
 
     captcha_params = {
-        'page_url' : 'https://your-site.com',
-        'sitekey' : '7LrGJmcUABBAALFtIb_FxC0LXm_GwOLyJAfbbUCL',
-    #     'type' : 1,                     # optional, 1 - normal recaptcha, 2 - invisible recaptcha, 3 - v3 recaptcha, default: 1
+        'page_url': 'https://your-site.com',
+        'sitekey': '7LrGJmcUABBAALFtIb_FxC0LXm_GwOLyJAfbbUCL',
+
+    # reCAPTCHA type(s) - optional, defaults to 1
+    # ---------------------------------------------
+    # 1 - v2
+    # 2 - invisible
+    # 3 - v3
+    # 4 - enterprise v2
+    # 5 - enterprise v3
+    #
+    # 'type' : 1,
+    #
     #     #'v3_min_score' : .3,           # optional
     #     #'v3_action' : 'homepage',      # optional
     #     #'proxy': '126.45.34.53:345',   # or 126.45.34.53:123:joe:password
     #     #'user_agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0',    # optional
-    #     #'data-s': 'data-s-value-here'	# optional   # optional
+    #     #'data-s': 'data-s-value-here'	# optional
+    #     #'cookie_input': 'a=b;c=d'	# optional
+
     }
     captcha_id = ita.submit_recaptcha(captcha_params)  # submit captcha first, to get ID
 
