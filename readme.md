@@ -162,6 +162,22 @@ captcha_params = {
 captcha_id = ita.submit_tiktok(captcha_params)  # submit captcha first, to get ID
 ```
 
+### FunCaptcha
+
+Requires page_url, sitekey and s_url (source URL)
+
+```python
+captcha_params = {
+    'page_url': 'https://your-site.com',
+    'sitekey': '11111111-1111-1111-1111-111111111111',
+    's_url': 'https://api.arkoselabs.com',
+    # 'data': '{"a": "b"}',          # optional, extra funcaptcha data in JSON format
+    # 'proxy': '12.34.56.78:321',    # optional, or 126.45.34.53:123:joe:password
+    # 'user_agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0',    # optional
+}  
+captcha_id = ita.submit_capy(captcha_params)  # submit captcha first, to get ID
+```
+
 ## Retrieve response
 
 Regardless of the captcha type (and method) used in submission of the captcha, this method is used

@@ -24,6 +24,7 @@ GEETEST_RETRIEVE_ENDPOINT = 'http://captchatypers.com/captchaapi/getrecaptchatex
 HCAPTCHA_ENDPOINT = 'http://captchatypers.com/captchaapi/UploadHCaptchaUser.ashx'
 CAPY_ENDPOINT = 'http://captchatypers.com/captchaapi/UploadCapyCaptchaUser.ashx'
 TIKTOK_ENDPOINT = 'http://captchatypers.com/captchaapi/UploadTikTokCaptchaUser.ashx'
+FUNCAPTCHA_ENDPOINT = 'http://captchatypers.com/captchaapi/UploadFunCaptcha.ashx'
 RETRIEVE_JSON_ENDPOINT = 'http://captchatypers.com/captchaapi/GetCaptchaResponseJson.ashx'
 
 CAPTCHA_ENDPOINT_CONTENT_TOKEN = 'http://captchatypers.com/Forms/UploadFileAndGetTextNEWToken.ashx'
@@ -364,6 +365,59 @@ class ImageTyperzAPI:
         else:
             js = json_loads(response.text)
             return js[0]['CaptchaId']
+
+    # submit capy
+    def submit_funcaptcha(self, d):
+        # check if page_url and sitekey are != None
+        if 'page_url' not in d or not d['page_url']: raise Exception('provide a valid page_url')
+        if 'sitekey' not in d or not d['sitekey']: raise Exception('provide a valid sitekey')
+        page_url = d['page_url']
+        sitekey = d['sitekey']
+
+        # check for proxy
+        proxy = None
+        if 'proxy' in d: proxy = d['proxy']  # if proxy, add it
+
+        data = {}  # create data obj here, we might need it for proxy
+
+        if self._username:
+            data['username'] = self._username
+            data['password'] = self._password
+        else:
+            data['token'] = self._access_token
+
+        # check proxy and set dict (request params) accordingly
+        if proxy:  # if proxy is given, check proxytype
+            # we have both proxy and type at this point
+            data['proxy'] = proxy
+            data['proxytype'] = 'HTTP'
+
+        # init dict params  (request params)
+        data['action'] = 'UPLOADCAPTCHA'
+        data['pageurl'] = page_url
+        data['sitekey'] = sitekey
+        if 's_url' in d: data['surl'] = d['s_url']
+        data['captchatype'] = 13
+        if self._affiliate_id:
+            data['affiliateid'] = self._affiliate_id
+
+        if 'data' in d: data['data'] = d['data']
+        # user agent
+        if 'user_agent' in d: data['useragent'] = d['user_agent']
+
+        # make request with all data
+        response = self._session.post(FUNCAPTCHA_ENDPOINT, data=data,
+                                      headers=self._headers, timeout=self._timeout)
+        response_text = str(response.text)  # get text from response
+
+        # check if we got an error
+        # -------------------------------------------------------------
+        if 'ERROR:' in response_text and response_text.split('|') != 2:
+            raise Exception(response_text.split('ERROR:')[1].strip())  # raise Ex
+        else:
+            js = json_loads(response.text)
+            response_text = js[0]['CaptchaId']
+            return response_text
 
     # use to retrieve captcha response
     def retrieve_response(self, captcha_id):
