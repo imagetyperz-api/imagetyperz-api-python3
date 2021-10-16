@@ -248,6 +248,9 @@ class ImageTyperzAPI:
 
         # user agent
         if 'user_agent' in d: data['useragent'] = d['user_agent']
+        # invisible mode
+        if 'invisible' in d:
+            data['invisible'] = '1'
 
         # make request with all data
         response = self._session.post(HCAPTCHA_ENDPOINT, data=data,
