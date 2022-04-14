@@ -20,6 +20,7 @@ RECAPTCHA_RETRIEVE_ENDPOINT = 'http://captchatypers.com/captchaapi/GetRecaptchaT
 BALANCE_ENDPOINT = 'http://captchatypers.com/Forms/RequestBalance.ashx'
 BAD_IMAGE_ENDPOINT = 'http://captchatypers.com/Forms/SetBadImage.ashx'
 GEETEST_SUBMIT_ENDPOINT = 'http://captchatypers.com/captchaapi/UploadGeeTest.ashx'
+GEETEST_V4_SUBMIT_ENDPOINT = 'http://www.captchatypers.com/captchaapi/UploadGeeTestV4.ashx'
 GEETEST_RETRIEVE_ENDPOINT = 'http://captchatypers.com/captchaapi/getrecaptchatext.ashx'
 HCAPTCHA_ENDPOINT = 'http://captchatypers.com/captchaapi/UploadHCaptchaUser.ashx'
 CAPY_ENDPOINT = 'http://captchatypers.com/captchaapi/UploadCapyCaptchaUser.ashx'
@@ -200,6 +201,34 @@ class ImageTyperzAPI:
         if self._affiliate_id: d['affiliateid'] = self._affiliate_id
 
         url = '{}?{}'.format(url, urlencode(d))
+        # make request with all data
+        response = self._session.post(url, data=d,
+                                      headers=self._headers, timeout=self._timeout)
+        response_text = '{}'.format(response.text)
+
+        # check if we got an error
+        # -------------------------------------------------------------
+        if 'ERROR:' in response_text and response_text.split('|') != 2:
+            raise Exception(response_text.split('ERROR:')[1].strip())  # raise Ex
+        return response_text
+
+    # submit geetest captcha
+    def submit_geetest_v4(self, d):
+        # check if page_url and sitekey are != None
+        if 'domain' not in d: raise Exception('domain is missing')
+        if 'geetestid' not in d: raise Exception('geetestid is missing')
+        d['action'] = 'UPLOADCAPTCHA'
+        # credentials and url
+        if self._username:
+            d['username'] = self._username
+            d['password'] = self._password
+        else:
+            d['token'] = self._access_token
+
+        # affiliate ID
+        if self._affiliate_id: d['affiliateid'] = self._affiliate_id
+
+        url = '{}?{}'.format(GEETEST_V4_SUBMIT_ENDPOINT, urlencode(d))
         # make request with all data
         response = self._session.post(url, data=d,
                                       headers=self._headers, timeout=self._timeout)
