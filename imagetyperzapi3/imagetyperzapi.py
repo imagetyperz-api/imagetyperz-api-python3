@@ -40,10 +40,9 @@ GEETEST_SUBMIT_ENDPOINT_TOKEN = 'http://captchatypers.com/captchaapi/UploadGeeTe
 # ---------------------------
 USER_AGENT = 'pythonAPI1.0'
 
-# API class
-# -----------------------------------------
+
 class ImageTyperzAPI:
-    def __init__(self, access_token, affiliate_id = 0, timeout = 120):
+    def __init__(self, access_token, affiliate_id=0, timeout=120):
         self._access_token = access_token
         self._affiliate_id = affiliate_id
 
@@ -55,7 +54,7 @@ class ImageTyperzAPI:
         self._session = session()       # init a new session
 
         self._headers = {               # use this user agent
-            'User-Agent' : USER_AGENT
+            'User-Agent': USER_AGENT
         }
 
     # set username and password
@@ -64,31 +63,21 @@ class ImageTyperzAPI:
         self._password = password
 
     # solve normal captcha
-    def submit_image(self, image_path, is_case_sensitive = False, is_math = False, is_phrase = False, digits_only = False, letters_only = False, min_length = 0, max_length = 0):
+    # this method was minimally overwritten to support images as base64 instead
+    # of path
+    def submit_image(
+        self,
+        image_data,
+        is_case_sensitive=False,
+        is_math=False,
+        is_phrase=False,
+        digits_only=False,
+        letters_only=False,
+        min_length=0,
+        max_length=0
+    ):
         data = {}
-        # if username is given, do it with user otherwise token
-        if self._username:
-            data['username'] = self._username
-            data['password'] = self._password
-            url = CAPTCHA_ENDPOINT
-            if not os.path.exists(image_path): raise Exception('captcha image does not exist: {}'.format(image_path))
-            # read image/captcha
-            with open(image_path, 'rb') as f:
-                image_data = b64encode(f.read())
-        else:
-            if image_path.lower().startswith('http'):
-                url = CAPTCHA_ENDPOINT_URL_TOKEN
-                image_data = image_path
-            else:
-                url = CAPTCHA_ENDPOINT_CONTENT_TOKEN
-                # check if image/file exists
-                if not os.path.exists(image_path): raise Exception('captcha image does not exist: {}'.format(image_path))
-
-                # read image/captcha
-                with open(image_path, 'rb') as f:
-                    image_data = b64encode(f.read())
-            # set token
-            data['token'] = self._access_token
+        data['token'] = self._access_token
 
         # init dict params  (request params)
         data['action'] = 'UPLOADCAPTCHA'
@@ -96,27 +85,28 @@ class ImageTyperzAPI:
         data['isphrase'] = 'true' if is_phrase else None
         data['ismath'] = 'true' if is_math else None
 
-        # digits, letters, or both
-        if digits_only: data['alphanumeric'] = '1'
-        elif letters_only: data['alphanumeric'] = '2'
+        data['alphanumeric'] = '1' if digits_only else '2'
 
         # min, max length
-        if min_length != 0: data['minlength'] = min_length
-        if max_length != 0: data['maxlength'] = max_length
+        if min_length != 0:
+            data['minlength'] = min_length
+        if max_length != 0:
+            data['maxlength'] = max_length
 
         data['file'] = image_data
 
-        if self._affiliate_id: data['affiliateid'] = self._affiliate_id
-
         # make request with all data
-        response = self._session.post(url, data=data,
-                                      headers=self._headers,
-                                      timeout=self._timeout)
+        response = self._session.post(
+            CAPTCHA_ENDPOINT_CONTENT_TOKEN,
+            data=data,
+            headers=self._headers,
+            timeout=self._timeout
+        )
         response_text = str(response.text)  # get text from response
 
         # check if we got an error
         if 'ERROR:' in response_text and response_text.split('|') != 2:
-            raise Exception(response_text.split('ERROR:')[0].strip())  # raise Ex
+            raise Exception(response_text.split('ERROR:')[0].strip())
         return response_text.split('|')[0]
 
     # submit recaptcha to system
