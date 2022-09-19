@@ -273,6 +273,8 @@ class ImageTyperzAPI:
         data['pageurl'] = page_url
         data['sitekey'] = sitekey  # just to make sure it's not sitekey that's required as input
         data['captchatype'] = 11
+        if 'HcaptchaEnterprise' in d and d['HcaptchaEnterprise']:
+            data['HcaptchaEnterprise'] = json.dumps(d['HcaptchaEnterprise'])
         if self._affiliate_id:
             data['affiliateid'] = self._affiliate_id
 
