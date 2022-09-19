@@ -381,7 +381,6 @@ class ImageTyperzAPI:
         data['variables'] = ''
         if d['variables']:
             data['variables'] = json.dumps(d['variables'])
-        data['sitekey'] = 'dsadsadsa'
         data['template_name'] = d['template_name']
         data['captchatype'] = 16
         if self._affiliate_id:
