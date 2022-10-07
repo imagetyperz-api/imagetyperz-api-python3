@@ -28,6 +28,7 @@ TIKTOK_ENDPOINT = 'http://captchatypers.com/captchaapi/UploadTikTokCaptchaUser.a
 FUNCAPTCHA_ENDPOINT = 'http://captchatypers.com/captchaapi/UploadFunCaptcha.ashx'
 RETRIEVE_JSON_ENDPOINT = 'http://captchatypers.com/captchaapi/GetCaptchaResponseJson.ashx'
 TASK_ENDPOINT = 'http://captchatypers.com/captchaapi/UploadCaptchaTask.ashx'
+TASK_PUSH_ENDPOINT = 'http://captchatypers.com/CaptchaAPI/SaveCaptchaPush.ashx'
 
 CAPTCHA_ENDPOINT_CONTENT_TOKEN = 'http://captchatypers.com/Forms/UploadFileAndGetTextNEWToken.ashx'
 CAPTCHA_ENDPOINT_URL_TOKEN = 'http://captchatypers.com/Forms/FileUploadAndGetTextCaptchaURLToken.ashx'
@@ -40,6 +41,7 @@ GEETEST_SUBMIT_ENDPOINT_TOKEN = 'http://captchatypers.com/captchaapi/UploadGeeTe
 # user agent used in requests
 # ---------------------------
 USER_AGENT = 'pythonAPI1.0'
+
 
 # API class
 # -----------------------------------------
@@ -590,3 +592,28 @@ class ImageTyperzAPI:
             raise Exception(response_text.split('ERROR:')[1].strip())                               # raise
 
         return response_text  # we don't, return balance
+
+    # update task pushVariables
+    def task_push_variables(self, captcha_id, variables):
+        data = {
+            "action": "GETTEXT",
+            "captchaid": captcha_id,
+            "pushVariables": json.dumps(variables)
+        }
+
+        if self._username:
+            data["username"] = self._username
+            data["password"] = self._password
+        else:
+            data["token"] = self._access_token
+
+        # make request
+        response = self._session.post(TASK_PUSH_ENDPOINT, data=data,
+                                      headers=self._headers, timeout=self._timeout)
+        response_text = str(response.text)
+
+        # check if we have an error
+        if 'ERROR:' in response_text:
+            raise Exception(response_text.split('ERROR:')[1].strip())                               # raise
+
+        return response_text

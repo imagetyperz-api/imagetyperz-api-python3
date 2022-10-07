@@ -22,6 +22,10 @@ def test_api():
     }
     captcha_id = ita.submit_task(captcha_params)  # submit captcha first, to get ID
 
+    # send pushVariable - update of variable while task is running (e.g 2FA code)
+    # ------------------------------------------------------------------------------
+    # ita.task_push_variables(captcha_id, dict(twofactor_code='38493'))
+
     # check if it's still in progress (waiting to be solved), every 10 seconds
     print('Waiting for captcha to be solved ...')
     response = None
