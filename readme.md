@@ -65,18 +65,20 @@ For recaptcha submission there are two things that are required.
   - `3` - v3
   - `4` - enterprise v2
   - `5` - enterprise v3
+- domain - used in loading of reCAPTCHA interface, default: `www.google.com` (alternative: `recaptcha.net`) - `optional`
 - v3_min_score - minimum score to target for v3 recaptcha `- optional`
 - v3_action - action parameter to use for v3 recaptcha `- optional`
 - proxy - proxy to use when solving recaptcha, eg. `12.34.56.78:1234` or `12.34.56.78:1234:user:password` `- optional`
 - user_agent - useragent to use when solve recaptcha `- optional` 
 - data-s - extra parameter used in solving recaptcha `- optional`
-- cookie_input - cookies used in solving reCAPTCHA - `- optional`
+- cookie_input - cookies used in solving reCAPTCHA `- optional`
 
 ``` python
 captcha_params = {
     'page_url' : 'example.com',
     'sitekey' : '6FDDs34g3321-3234fgfh23rv32fgtrrsv3c',
     #'type' : 2,                    # optional
+    #'domain': 'www.google.com',    # optional   
     #'v3_min_score' : .3,           # optional
     #'v3_action' : 'homepage',      # optional
     #'proxy': '126.45.34.53:345',    # optional, or 126.45.34.53:123:joe:password
@@ -158,6 +160,9 @@ captcha_params = {
         'sitekey': '8c7062c7-cae6-4e12-96fb-303fbec7fe4f',
   
         # 'invisible': '1',             # if invisible hcaptcha - optional
+       
+        # domain used in loading of hcaptcha interface, default: hcaptcha.com - optional
+        # 'domain': 'hcaptcha.com',
   
         # extra parameters, useful for enterprise
         # submit userAgent from requests too, when this is used
@@ -216,6 +221,21 @@ captcha_params = {
 captcha_id = ita.submit_capy(captcha_params)  # submit captcha first, to get ID
 ```
 
+### Turnstile (Cloudflare)
+
+```python
+captcha_params = {
+    'page_url': 'https://your-site.com',
+    'sitekey': 'Fme7hXLvuCRNMC3uj10F52D3uNmg5c',
+    # 'domain': 'challenges.cloudflare.com',    # domain used in loading turnstile interface, default: challenges.cloudflare.com - optional
+    # 'action': 'homepage',                     # used in loading turnstile interface, similar to reCAPTCHA - optional
+    # 'cdata': 'cdata information',             # used in loading turnstile interface - optional
+    # 'proxy': '126.45.34.53:345',   # or 126.45.34.53:123:joe:password - optional
+    # 'user_agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0',    # optional
+}
+captcha_id = ita.submit_turnstile(captcha_params)  # submit captcha first, to get ID
+```
+
 ### Task
 
 Requires template_name, page_url and usually variables
@@ -271,8 +291,7 @@ The response is a JSON object that looks like this:
   "CaptchaId": 176707908, 
   "Response": "03AGdBq24PBCbwiDRaS_MJ7Z...mYXMPiDwWUyEOsYpo97CZ3tVmWzrB", 
   "Cookie_OutPut": "", 
-  "Proxy_reason": "", 
-  "Recaptcha score": 0.0, 
+  "Proxy_reason": "",
   "Status": "Solved"
 }
 ```

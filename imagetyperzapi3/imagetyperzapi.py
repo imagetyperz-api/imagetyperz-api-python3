@@ -13,30 +13,31 @@ from json import loads as json_loads
 
 # endpoints
 # -------------------------------------------------------------------------------------------
-CAPTCHA_ENDPOINT = 'http://captchatypers.com/Forms/UploadFileAndGetTextNEW.ashx'
-RECAPTCHA_SUBMIT_ENDPOINT = 'http://captchatypers.com/captchaapi/UploadRecaptchaV1.ashx'
-RECAPTCHA_ENTERPRISE_SUBMIT_ENDPOINT = 'http://captchatypers.com/captchaapi/UploadRecaptchaEnt.ashx'
-RECAPTCHA_RETRIEVE_ENDPOINT = 'http://captchatypers.com/captchaapi/GetRecaptchaText.ashx'
-BALANCE_ENDPOINT = 'http://captchatypers.com/Forms/RequestBalance.ashx'
-BAD_IMAGE_ENDPOINT = 'http://captchatypers.com/Forms/SetBadImage.ashx'
-GEETEST_SUBMIT_ENDPOINT = 'http://captchatypers.com/captchaapi/UploadGeeTest.ashx'
+CAPTCHA_ENDPOINT = 'https://captchatypers.com/Forms/UploadFileAndGetTextNEW.ashx'
+RECAPTCHA_SUBMIT_ENDPOINT = 'https://captchatypers.com/captchaapi/UploadRecaptchaV1.ashx'
+RECAPTCHA_ENTERPRISE_SUBMIT_ENDPOINT = 'https://captchatypers.com/captchaapi/UploadRecaptchaEnt.ashx'
+RECAPTCHA_RETRIEVE_ENDPOINT = 'https://captchatypers.com/captchaapi/GetRecaptchaText.ashx'
+BALANCE_ENDPOINT = 'https://captchatypers.com/Forms/RequestBalance.ashx'
+BAD_IMAGE_ENDPOINT = 'https://captchatypers.com/Forms/SetBadImage.ashx'
+GEETEST_SUBMIT_ENDPOINT = 'https://captchatypers.com/captchaapi/UploadGeeTest.ashx'
 GEETEST_V4_SUBMIT_ENDPOINT = 'http://www.captchatypers.com/captchaapi/UploadGeeTestV4.ashx'
-GEETEST_RETRIEVE_ENDPOINT = 'http://captchatypers.com/captchaapi/getrecaptchatext.ashx'
-HCAPTCHA_ENDPOINT = 'http://captchatypers.com/captchaapi/UploadHCaptchaUser.ashx'
-CAPY_ENDPOINT = 'http://captchatypers.com/captchaapi/UploadCapyCaptchaUser.ashx'
-TIKTOK_ENDPOINT = 'http://captchatypers.com/captchaapi/UploadTikTokCaptchaUser.ashx'
-FUNCAPTCHA_ENDPOINT = 'http://captchatypers.com/captchaapi/UploadFunCaptcha.ashx'
-RETRIEVE_JSON_ENDPOINT = 'http://captchatypers.com/captchaapi/GetCaptchaResponseJson.ashx'
-TASK_ENDPOINT = 'http://captchatypers.com/captchaapi/UploadCaptchaTask.ashx'
-TASK_PUSH_ENDPOINT = 'http://captchatypers.com/CaptchaAPI/SaveCaptchaPush.ashx'
+GEETEST_RETRIEVE_ENDPOINT = 'https://captchatypers.com/captchaapi/getrecaptchatext.ashx'
+HCAPTCHA_ENDPOINT = 'https://captchatypers.com/captchaapi/UploadHCaptchaUser.ashx'
+CAPY_ENDPOINT = 'https://captchatypers.com/captchaapi/UploadCapyCaptchaUser.ashx'
+TIKTOK_ENDPOINT = 'https://captchatypers.com/captchaapi/UploadTikTokCaptchaUser.ashx'
+FUNCAPTCHA_ENDPOINT = 'https://captchatypers.com/captchaapi/UploadFunCaptcha.ashx'
+RETRIEVE_JSON_ENDPOINT = 'https://captchatypers.com/captchaapi/GetCaptchaResponseJson.ashx'
+TASK_ENDPOINT = 'https://captchatypers.com/captchaapi/UploadCaptchaTask.ashx'
+TASK_PUSH_ENDPOINT = 'https://captchatypers.com/CaptchaAPI/SaveCaptchaPush.ashx'
 
-CAPTCHA_ENDPOINT_CONTENT_TOKEN = 'http://captchatypers.com/Forms/UploadFileAndGetTextNEWToken.ashx'
-CAPTCHA_ENDPOINT_URL_TOKEN = 'http://captchatypers.com/Forms/FileUploadAndGetTextCaptchaURLToken.ashx'
-RECAPTCHA_SUBMIT_ENDPOINT_TOKEN = 'http://captchatypers.com/captchaapi/UploadRecaptchaToken.ashx'
-RECAPTCHA_RETRIEVE_ENDPOINT_TOKEN = 'http://captchatypers.com/captchaapi/GetRecaptchaTextToken.ashx'
-BALANCE_ENDPOINT_TOKEN = 'http://captchatypers.com/Forms/RequestBalanceToken.ashx'
-BAD_IMAGE_ENDPOINT_TOKEN = 'http://captchatypers.com/Forms/SetBadImageToken.ashx'
-GEETEST_SUBMIT_ENDPOINT_TOKEN = 'http://captchatypers.com/captchaapi/UploadGeeTestToken.ashx'
+CAPTCHA_ENDPOINT_CONTENT_TOKEN = 'http://45.35.0.21:80/Forms/UploadFileAndGetTextNEWToken.ashx'
+CAPTCHA_ENDPOINT_URL_TOKEN = 'http://45.35.0.21:80/Forms/FileUploadAndGetTextCaptchaURLToken.ashx'
+RECAPTCHA_SUBMIT_ENDPOINT_TOKEN = 'https://captchatypers.com/captchaapi/UploadRecaptchaToken.ashx'
+RECAPTCHA_RETRIEVE_ENDPOINT_TOKEN = 'https://captchatypers.com/captchaapi/GetRecaptchaTextToken.ashx'
+BALANCE_ENDPOINT_TOKEN = 'https://captchatypers.com/Forms/RequestBalanceToken.ashx'
+BAD_IMAGE_ENDPOINT_TOKEN = 'https://captchatypers.com/Forms/SetBadImageToken.ashx'
+GEETEST_SUBMIT_ENDPOINT_TOKEN = 'https://captchatypers.com/captchaapi/UploadGeeTestToken.ashx'
+TURNSTILE_ENDPOINT = 'https://captchatypers.com/captchaapi/Uploadturnstile.ashx'
 
 # user agent used in requests
 # ---------------------------
@@ -161,6 +162,10 @@ class ImageTyperzAPI:
         # user agent
         if 'user_agent' in d: data['useragent'] = d['user_agent']
         
+        # domain
+        if 'domain' in d:
+            data['domain'] = d['domain']
+
         data['recaptchatype'] = 0
         if 'type' in d:
             data['recaptchatype'] = d['type']
@@ -275,6 +280,8 @@ class ImageTyperzAPI:
         data['pageurl'] = page_url
         data['sitekey'] = sitekey  # just to make sure it's not sitekey that's required as input
         data['captchatype'] = 11
+        if 'domain' in d:
+            data['apiEndpoint'] = d['domain']
         if 'HcaptchaEnterprise' in d and d['HcaptchaEnterprise']:
             data['HcaptchaEnterprise'] = json.dumps(d['HcaptchaEnterprise'])
         if self._affiliate_id:
@@ -352,6 +359,66 @@ class ImageTyperzAPI:
             response_text = js[0]['CaptchaId']
             return response_text
             
+    # submit turnstile
+    def submit_turnstile(self, d):
+        page_url = d['page_url']
+        sitekey = d['sitekey']
+
+        # check for proxy
+        proxy = None
+        if 'proxy' in d: proxy = d['proxy']  # if proxy, add it
+
+        # check if page_url and sitekey are != None
+        if not page_url: raise Exception('provide a valid page_url')
+        if not sitekey: raise Exception('provide a valid sitekey')
+
+        data = {}  # create data obj here, we might need it for proxy
+
+        if self._username:
+            data['username'] = self._username
+            data['password'] = self._password
+        else:
+            data['token'] = self._access_token
+
+        # check proxy and set dict (request params) accordingly
+        if proxy:  # if proxy is given, check proxytype
+            # we have both proxy and type at this point
+            data['proxy'] = proxy
+            data['proxytype'] = 'HTTP'
+
+        # init dict params  (request params)
+        data['action'] = 'UPLOADCAPTCHA'
+        data['pageurl'] = page_url
+        data['sitekey'] = sitekey
+        if self._affiliate_id:
+            data['affiliateid'] = self._affiliate_id
+
+        # user agent
+        if 'user_agent' in d:
+            data['useragent'] = d['user_agent']
+        # domain
+        if 'domain' in d:
+            data['apiEndpoint'] = d['domain']
+        # action
+        if 'action' in d:
+            data['taction'] = d['action']
+        # action
+        if 'cdata' in d:
+            data['data'] = d['cdata']
+
+        response = self._session.post(TURNSTILE_ENDPOINT, data=data,
+                                      headers=self._headers, timeout=self._timeout)
+        response_text = str(response.text)  # get text from response
+
+        # check if we got an error
+        # -------------------------------------------------------------
+        if 'ERROR:' in response_text and response_text.split('|') != 2:
+            raise Exception(response_text.split('ERROR:')[1].strip())  # raise Ex
+        else:
+            js = json_loads(response.text)
+            response_text = js[0]['CaptchaId']
+            return response_text
+
     # submit task
     def submit_task(self, d):
         page_url = d['page_url']
@@ -614,6 +681,5 @@ class ImageTyperzAPI:
 
         # check if we have an error
         if 'ERROR:' in response_text:
-            raise Exception(response_text.split('ERROR:')[1].strip())                               # raise
-
+            raise Exception(response_text.split('ERROR:')[1].strip())
         return response_text
