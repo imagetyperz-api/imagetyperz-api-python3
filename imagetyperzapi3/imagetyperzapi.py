@@ -30,8 +30,8 @@ RETRIEVE_JSON_ENDPOINT = 'https://captchatypers.com/captchaapi/GetCaptchaRespons
 TASK_ENDPOINT = 'https://captchatypers.com/captchaapi/UploadCaptchaTask.ashx'
 TASK_PUSH_ENDPOINT = 'https://captchatypers.com/CaptchaAPI/SaveCaptchaPush.ashx'
 
-CAPTCHA_ENDPOINT_CONTENT_TOKEN = 'http://45.35.0.21:80/Forms/UploadFileAndGetTextNEWToken.ashx'
-CAPTCHA_ENDPOINT_URL_TOKEN = 'http://45.35.0.21:80/Forms/FileUploadAndGetTextCaptchaURLToken.ashx'
+CAPTCHA_ENDPOINT_CONTENT_TOKEN = 'https://captchatypers.com/Forms/UploadFileAndGetTextNEWToken.ashx'
+CAPTCHA_ENDPOINT_URL_TOKEN = 'https://captchatypers.com/Forms/FileUploadAndGetTextCaptchaURLToken.ashx'
 RECAPTCHA_SUBMIT_ENDPOINT_TOKEN = 'https://captchatypers.com/captchaapi/UploadRecaptchaToken.ashx'
 RECAPTCHA_RETRIEVE_ENDPOINT_TOKEN = 'https://captchatypers.com/captchaapi/GetRecaptchaTextToken.ashx'
 BALANCE_ENDPOINT_TOKEN = 'https://captchatypers.com/Forms/RequestBalanceToken.ashx'
